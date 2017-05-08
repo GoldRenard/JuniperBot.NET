@@ -83,7 +83,7 @@
     <Compile Include="Commands\AbstractExtendedCommand.cs" />
     <Compile Include="Commands\HelpCommand.cs" />
     <Compile Include="Commands\PhyrCommand.cs" />
-    <Compile Include="Interfaces\ICommand.cs" />
+    <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Model\Configuration\BotConfigSection.cs" />
     <Compile Include="Model\Configuration\DiscordElement.cs" />
     <Compile Include="Model\Configuration\InstagramElement.cs" />
@@ -93,7 +93,7 @@
     <Compile Include="Services\AbstractService.cs" />
     <Compile Include="Modules\DependencyModule.cs" />
     <Compile Include="Services\CommandManager.cs" />
-    <Compile Include="Interfaces\IService.cs" />
+    <Compile Include="Services\IService.cs" />
     <Compile Include="Services\ConfigurationManager.cs" />
     <Compile Include="Services\DiscordClient.cs" />
     <Compile Include="Services\InstagramClient.cs" />
