@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
-using DSharpPlus;
+using Discord;
+using Discord.WebSocket;
 using Ninject;
 
 namespace JuniperBot.Services {
@@ -20,9 +21,9 @@ namespace JuniperBot.Services {
             get; set;
         }
 
-        private DSharpPlus.DiscordClient Client;
+        private DiscordSocketClient Client;
 
-        private DiscordConfig Config;
+        private DiscordSocketConfig Config;
 
         private bool Connected
         {
@@ -31,69 +32,79 @@ namespace JuniperBot.Services {
         }
 
         protected override void Init() {
-            Config = new DiscordConfig {
-                AutoReconnect = false, // control it by ourselves
-                DiscordBranch = Branch.Stable,
-                LargeThreshold = 250,
-                LogLevel = LogLevel.Unnecessary,
-                Token = ConfigurationManager.Config.Discord.Token,
-                TokenType = TokenType.Bot,
-                UseInternalLogHandler = false
+            Config = new DiscordSocketConfig() {
+                LogLevel = LogSeverity.Verbose,
+                MessageCacheSize = 100
             };
-
-            Client = new DSharpPlus.DiscordClient(Config);
-            Client.DebugLogger.LogMessageReceived += OnLogMessageReceived;
-            Client.MessageCreated += OnMessageReceived;
-            Client.GuildAvailable += e => {
-                Client.DebugLogger.LogMessage(LogLevel.Info, "discord bot", $"Guild available: {e.Guild.Name}", DateTime.Now);
-                return Task.Delay(0);
-            };
+            Client = new DiscordSocketClient(Config);
+            Client.MessageReceived += OnMessageReceived;
+            Client.Log += OnLogMessageReceived;
         }
 
         public async Task Connect() {
-            await Client.ConnectAsync();
+            await Client.LoginAsync(TokenType.Bot, ConfigurationManager.Config.Discord.Token);
+            await Client.StartAsync();
             await Task.Delay(-1);
         }
 
-        private async Task OnMessageReceived(MessageCreateEventArgs e) {
+        public async Task Disconnect() {
+            if (Client.ConnectionState == ConnectionState.Connected || Client.ConnectionState == ConnectionState.Disconnected) {
+                await Client.StopAsync();
+                await Client.LogoutAsync();
+                Client.Dispose();
+            }
+        }
+
+        private async Task OnMessageReceived(SocketMessage e) {
             if (e.Author.IsBot) {
                 return;
             }
 
-            string input = e.Message.Content;
+            string input = e.Content;
             if (!string.IsNullOrEmpty(input)) {
                 if (input.StartsWith(ConfigurationManager.Config.Discord.CommandPrefix)) {
                     input = input.Substring(ConfigurationManager.Config.Discord.CommandPrefix.Length);
-                    await CommandManager.Send(e.Message, input);
+                    await CommandManager.Send(e, input);
                 }
             }
         }
 
-        private void OnLogMessageReceived(object sender, DebugLogMessageEventArgs e) {
+        private async Task OnLogMessageReceived(LogMessage logMessage) {
             Action<string> log = LOGGER.Info;
+            Action<string, Exception> logEx = LOGGER.Info;
 
-            switch (e.Level) {
-                case LogLevel.Critical:
+            switch (logMessage.Severity) {
+                case LogSeverity.Critical:
                     log = LOGGER.Fatal;
+                    logEx = LOGGER.Fatal;
                     break;
 
-                case LogLevel.Debug:
+                case LogSeverity.Debug:
                     log = LOGGER.Debug;
+                    logEx = LOGGER.Debug;
                     break;
 
-                case LogLevel.Error:
+                case LogSeverity.Error:
                     log = LOGGER.Error;
+                    logEx = LOGGER.Error;
                     break;
 
-                case LogLevel.Warning:
+                case LogSeverity.Warning:
                     log = LOGGER.Warn;
+                    logEx = LOGGER.Warn;
                     break;
 
                 default:
                     log = LOGGER.Info;
+                    logEx = LOGGER.Info;
                     break;
             }
-            log(string.Format("{0}: {1}", e.Application, e.Message));
+            if (logMessage.Exception != null) {
+                logEx(logMessage.Message, logMessage.Exception);
+            } else {
+                log(logMessage.Message);
+            }
+            await Task.Delay(0);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using InstaSharp;
 using InstaSharp.Endpoints;
@@ -22,6 +23,14 @@ namespace JuniperBot.Services {
 
         private Users UsersEndPoint;
 
+        private List<InstaSharp.Models.Media> Cache = new List<InstaSharp.Models.Media>();
+
+        private long LatestUpdate
+        {
+            get;
+            set;
+        }
+
         protected override void Init() {
             Config = new InstagramConfig(
                 ConfigurationManager.Config.Instagram.ClientId,
@@ -38,8 +47,16 @@ namespace JuniperBot.Services {
         }
 
         public async Task<List<InstaSharp.Models.Media>> GetRecent() {
-            var userFeed = await UsersEndPoint.Recent(ConfigurationManager.Config.Instagram.UserId);
-            return userFeed.Meta.Code == System.Net.HttpStatusCode.OK ? userFeed.Data : null;
+            long currentTimestamp = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+            if (currentTimestamp > LatestUpdate + ConfigurationManager.Config.Instagram.TTL) {
+                var userFeed = await UsersEndPoint.Recent(ConfigurationManager.Config.Instagram.UserId);
+                lock (this) {
+                    if (userFeed.Meta.Code == System.Net.HttpStatusCode.OK) {
+                        Cache = userFeed.Data;
+                    }
+                }
+            }
+            return Cache;
         }
     }
 }

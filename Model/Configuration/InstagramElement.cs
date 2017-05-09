@@ -48,5 +48,14 @@ namespace JuniperBot.Model.Configuration {
                 return (long)base["UserId"];
             }
         }
+
+        [ConfigurationProperty("TTL", IsRequired = true)]
+        public long TTL
+        {
+            get
+            {
+                return (long)base["TTL"];
+            }
+        }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using DSharpPlus;
+using Discord.WebSocket;
 using JuniperBot.Model;
 
 namespace JuniperBot.Commands {
@@ -19,7 +19,7 @@ namespace JuniperBot.Commands {
         /// </summary>
         /// <param name="args">Arguments</param>
         /// <returns><B>True</B> if command successfully executed, <B>False</B> otherwise.</returns>
-        protected delegate Task<bool> SubCommand(DiscordMessage message, BotContext context, string[] args);
+        protected delegate Task<bool> SubCommand(SocketMessage message, BotContext context, string[] args);
 
         private Dictionary<string, SubCommand> _SubCommands;
 
@@ -55,7 +55,7 @@ namespace JuniperBot.Commands {
         /// </summary>
         /// <param name="args">Input arguments</param>
         /// <returns><B>True</B> if command successfully executed, <B>False</B> otherwise.</returns>
-        public async override Task<bool> DoCommand(DiscordMessage message, BotContext context, string[] args) {
+        public async override Task<bool> DoCommand(SocketMessage message, BotContext context, string[] args) {
             if (!await CheckInput(args)) {
                 return false;
             }
@@ -128,7 +128,7 @@ namespace JuniperBot.Commands {
         /// </summary>
         /// <param name="args">Arguments (not used)</param>
         /// <returns>Not used. Always <b>True</b>.</returns>
-        private async Task<bool> HelpCommand(DiscordMessage message, BotContext context, string[] args) {
+        private async Task<bool> HelpCommand(SocketMessage message, BotContext context, string[] args) {
             foreach (string output in GetCommandList()) {
                 LogInfo(output);
             }

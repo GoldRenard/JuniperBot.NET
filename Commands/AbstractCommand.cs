@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DSharpPlus;
+using Discord.WebSocket;
 using JuniperBot.Model;
 
 namespace JuniperBot.Commands {
@@ -14,6 +14,8 @@ namespace JuniperBot.Commands {
     /// <seealso cref="ICommand"/>
     /// <seealso cref="AbstractExtendedCommand"/>
     public abstract class AbstractCommand : ICommand {
+        public readonly int MAX_MESSAGE_SIZE = 2000;
+
         private readonly string commandName;
         private readonly string commandDescription;
 
@@ -32,7 +34,7 @@ namespace JuniperBot.Commands {
         /// </summary>
         /// <param name="args">Input arguments</param>
         /// <returns><B>True</B> if command successfully executed, <B>false</B> otherwise.</returns>
-        public abstract Task<bool> DoCommand(DiscordMessage message, BotContext context, string[] args);
+        public abstract Task<bool> DoCommand(SocketMessage message, BotContext context, string[] args);
 
         /// <summary>
         /// Command description

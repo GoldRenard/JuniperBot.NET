@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using DSharpPlus;
+using Discord.WebSocket;
 using JuniperBot.Model;
 
 namespace JuniperBot.Commands {
@@ -17,7 +17,7 @@ namespace JuniperBot.Commands {
         /// </summary>
         /// <param name="args">Input arguments</param>
         /// <returns><B>True</B> if command successfully executed, <B>False</B> otherwise.</returns>
-        Task<bool> DoCommand(DiscordMessage message, BotContext context, string[] args);
+        Task<bool> DoCommand(SocketMessage message, BotContext context, string[] args);
 
         /// <summary>
         /// Command description

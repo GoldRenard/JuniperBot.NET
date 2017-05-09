@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using DSharpPlus;
+using Discord.WebSocket;
 using JuniperBot.Model;
 
 namespace JuniperBot.Commands.Phyr {
@@ -10,13 +10,13 @@ namespace JuniperBot.Commands.Phyr {
             : base("нефырно", "Фырчать фырные картинки с непонятными надписями") {
         }
 
-        public async override Task<bool> DoCommand(DiscordMessage message, BotContext context, string[] args) {
+        public async override Task<bool> DoCommand(SocketMessage message, BotContext context, string[] args) {
             if (context.DetailedEmbed) {
-                await message.RespondAsync("Тебе мало буков? >_>");
+                await message.Channel.SendMessageAsync("Тебе мало буков? >_>");
                 return true;
             }
             context.DetailedEmbed = true;
-            await message.RespondAsync("Ну фыыыр :C");
+            await message.Channel.SendMessageAsync("Ну фыыыр :C");
             return true;
         }
     }

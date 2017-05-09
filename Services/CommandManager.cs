@@ -4,9 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DSharpPlus;
+using Discord.WebSocket;
 using JuniperBot.Commands;
 using JuniperBot.Model;
+using JuniperBot.Model.Exception;
 using JuniperBot.Tools;
 using Ninject;
 
@@ -31,7 +32,7 @@ namespace JuniperBot.Services {
             }
         }
 
-        public async Task<bool> Send(DiscordMessage message, string input) {
+        public async Task<bool> Send(SocketMessage message, string input) {
             if (string.IsNullOrEmpty(input)) {
                 return false;
             }
@@ -55,13 +56,21 @@ namespace JuniperBot.Services {
             }
 
             BotContext context;
-            ChannelContexts.TryGetValue(message.ChannelID, out context);
+            ChannelContexts.TryGetValue(message.Channel.Id, out context);
             if (context == null) {
                 context = new BotContext();
-                ChannelContexts.TryAdd(message.ChannelID, context);
+                ChannelContexts.TryAdd(message.Channel.Id, context);
             }
 
-            return await command.DoCommand(message, context, args.SubArray(1));
+            try {
+                return await command.DoCommand(message, context, args.SubArray(1));
+            } catch (ValidationException e) {
+                await message.Channel.SendMessageAsync(e.Message);
+            } catch (Exception e) {
+                await message.Channel.SendMessageAsync("Ой, произошла какая-то ошибка :C Покорми меня?");
+                LOGGER.Error($"Command '{commandKey}' execution error!", e);
+            }
+            return true;
         }
 
         public void RegisterCommand(ICommand command) {

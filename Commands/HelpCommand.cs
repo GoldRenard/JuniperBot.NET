@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using DSharpPlus;
+using Discord.WebSocket;
 using JuniperBot.Model;
 using JuniperBot.Services;
 using Ninject;
@@ -27,7 +27,7 @@ namespace JuniperBot.Commands {
             : base("хелп", "Отображает эту справку") {
         }
 
-        public async override Task<bool> DoCommand(DiscordMessage message, BotContext context, string[] args) {
+        public async override Task<bool> DoCommand(SocketMessage message, BotContext context, string[] args) {
             IDictionary<string, ICommand> commands = CommandManager.GetCommands();
             StringBuilder builder = new StringBuilder();
             builder.AppendLine();
@@ -37,7 +37,7 @@ namespace JuniperBot.Commands {
                 commands.TryGetValue(key, out command);
                 builder.AppendLine(String.Format("\t{0}{1} - {2}", ConfigurationManager.Config.Discord.CommandPrefix, key, command.GetDescription()));
             }
-            await message.RespondAsync(builder.ToString());
+            await message.Channel.SendMessageAsync(builder.ToString());
             return true;
         }
     }
