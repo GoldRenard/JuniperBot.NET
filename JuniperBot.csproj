@@ -82,8 +82,11 @@
     <Compile Include="Commands\AbstractCommand.cs" />
     <Compile Include="Commands\AbstractExtendedCommand.cs" />
     <Compile Include="Commands\HelpCommand.cs" />
-    <Compile Include="Commands\PhyrCommand.cs" />
+    <Compile Include="Commands\Phyr\NotDetailedCommand.cs" />
+    <Compile Include="Commands\Phyr\DetailedCommand.cs" />
+    <Compile Include="Commands\Phyr\PostCommand.cs" />
     <Compile Include="Commands\ICommand.cs" />
+    <Compile Include="Model\BotContext.cs" />
     <Compile Include="Model\Configuration\BotConfigSection.cs" />
     <Compile Include="Model\Configuration\DiscordElement.cs" />
     <Compile Include="Model\Configuration\InstagramElement.cs" />
@@ -97,6 +100,7 @@
     <Compile Include="Services\ConfigurationManager.cs" />
     <Compile Include="Services\DiscordClient.cs" />
     <Compile Include="Services\InstagramClient.cs" />
+    <Compile Include="Tools\Extensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

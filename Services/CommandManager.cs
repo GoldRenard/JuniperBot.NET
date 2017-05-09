@@ -2,9 +2,12 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus;
 using JuniperBot.Commands;
+using JuniperBot.Model;
+using JuniperBot.Tools;
 using Ninject;
 
 namespace JuniperBot.Services {
@@ -13,6 +16,8 @@ namespace JuniperBot.Services {
         private static readonly log4net.ILog LOGGER = log4net.LogManager.GetLogger(typeof(CommandManager));
 
         private ConcurrentDictionary<string, ICommand> Commands = new ConcurrentDictionary<string, ICommand>();
+
+        private ConcurrentDictionary<ulong, BotContext> ChannelContexts = new ConcurrentDictionary<ulong, BotContext>();
 
         [Inject]
         public ConfigurationManager ConfigurationManager
@@ -30,16 +35,33 @@ namespace JuniperBot.Services {
             if (string.IsNullOrEmpty(input)) {
                 return false;
             }
-            string[] args = input.Split(' ');
-            if (!Commands.ContainsKey(args[0])) {
+            if (input.Length > 255) {
                 return false;
             }
+            string[] args = ReadArgs(input);
+            if (args.Length == 0) {
+                return false;
+            }
+
+            string commandKey = args[0];
+            if (!Commands.ContainsKey(commandKey)) {
+                return false;
+            }
+
             ICommand command;
-            Commands.TryGetValue(args[0], out command);
+            Commands.TryGetValue(commandKey, out command);
             if (command == null) {
                 return false;
             }
-            return await command.DoCommand(message, args);
+
+            BotContext context;
+            ChannelContexts.TryGetValue(message.ChannelID, out context);
+            if (context == null) {
+                context = new BotContext();
+                ChannelContexts.TryAdd(message.ChannelID, context);
+            }
+
+            return await command.DoCommand(message, context, args.SubArray(1));
         }
 
         public void RegisterCommand(ICommand command) {
@@ -66,6 +88,77 @@ namespace JuniperBot.Services {
 
         public IDictionary<string, ICommand> GetCommands() {
             return new Dictionary<string, ICommand>(Commands);
+        }
+
+        /// <summary>
+        /// Reads command line arguments from a single string.
+        /// </summary>
+        /// <param name="argsString">The string that contains the entire command line.</param>
+        /// <returns>An array of the parsed arguments.</returns>
+        public string[] ReadArgs(string argsString) {
+            // Collects the split argument strings
+            List<string> args = new List<string>();
+            // Builds the current argument
+            var currentArg = new StringBuilder();
+            // Indicates whether the last character was a backslash escape character
+            bool escape = false;
+            // Indicates whether we're in a quoted range
+            bool inQuote = false;
+            // Indicates whether there were quotes in the current arguments
+            bool hadQuote = false;
+            // Remembers the previous character
+            char prevCh = '\0';
+            // Iterate all characters from the input string
+            for (int i = 0; i < argsString.Length; i++) {
+                char ch = argsString[i];
+                if (ch == '\\' && !escape) {
+                    // Beginning of a backslash-escape sequence
+                    escape = true;
+                } else if (ch == '\\' && escape) {
+                    // Double backslash, keep one
+                    currentArg.Append(ch);
+                    escape = false;
+                } else if (ch == '"' && !escape) {
+                    // Toggle quoted range
+                    inQuote = !inQuote;
+                    hadQuote = true;
+                    if (inQuote && prevCh == '"') {
+                        // Doubled quote within a quoted range is like escaping
+                        currentArg.Append(ch);
+                    }
+                } else if (ch == '"' && escape) {
+                    // Backslash-escaped quote, keep it
+                    currentArg.Append(ch);
+                    escape = false;
+                } else if (char.IsWhiteSpace(ch) && !inQuote) {
+                    if (escape) {
+                        // Add pending escape char
+                        currentArg.Append('\\');
+                        escape = false;
+                    }
+                    // Accept empty arguments only if they are quoted
+                    if (currentArg.Length > 0 || hadQuote) {
+                        args.Add(currentArg.ToString());
+                    }
+                    // Reset for next argument
+                    currentArg.Clear();
+                    hadQuote = false;
+                } else {
+                    if (escape) {
+                        // Add pending escape char
+                        currentArg.Append('\\');
+                        escape = false;
+                    }
+                    // Copy character from input, no special meaning
+                    currentArg.Append(ch);
+                }
+                prevCh = ch;
+            }
+            // Save last argument
+            if (currentArg.Length > 0 || hadQuote) {
+                args.Add(currentArg.ToString());
+            }
+            return args.ToArray();
         }
     }
 }

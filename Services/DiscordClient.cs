@@ -24,9 +24,15 @@ namespace JuniperBot.Services {
 
         private DiscordConfig Config;
 
+        private bool Connected
+        {
+            get;
+            set;
+        }
+
         protected override void Init() {
             Config = new DiscordConfig {
-                AutoReconnect = true,
+                AutoReconnect = false, // control it by ourselves
                 DiscordBranch = Branch.Stable,
                 LargeThreshold = 250,
                 LogLevel = LogLevel.Unnecessary,
@@ -34,6 +40,7 @@ namespace JuniperBot.Services {
                 TokenType = TokenType.Bot,
                 UseInternalLogHandler = false
             };
+
             Client = new DSharpPlus.DiscordClient(Config);
             Client.DebugLogger.LogMessageReceived += OnLogMessageReceived;
             Client.MessageCreated += OnMessageReceived;
@@ -49,6 +56,10 @@ namespace JuniperBot.Services {
         }
 
         private async Task OnMessageReceived(MessageCreateEventArgs e) {
+            if (e.Author.IsBot) {
+                return;
+            }
+
             string input = e.Message.Content;
             if (!string.IsNullOrEmpty(input)) {
                 if (input.StartsWith(ConfigurationManager.Config.Discord.CommandPrefix)) {

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using DSharpPlus;
+using JuniperBot.Model;
 
 namespace JuniperBot.Commands {
 
@@ -18,7 +19,7 @@ namespace JuniperBot.Commands {
         /// </summary>
         /// <param name="args">Arguments</param>
         /// <returns><B>True</B> if command successfully executed, <B>False</B> otherwise.</returns>
-        protected delegate Task<bool> SubCommand(DiscordMessage message, string[] args);
+        protected delegate Task<bool> SubCommand(DiscordMessage message, BotContext context, string[] args);
 
         private Dictionary<string, SubCommand> _SubCommands;
 
@@ -54,13 +55,13 @@ namespace JuniperBot.Commands {
         /// </summary>
         /// <param name="args">Input arguments</param>
         /// <returns><B>True</B> if command successfully executed, <B>False</B> otherwise.</returns>
-        public async override Task<bool> DoCommand(DiscordMessage message, string[] args) {
-            if (!CheckInput(args)) {
+        public async override Task<bool> DoCommand(DiscordMessage message, BotContext context, string[] args) {
+            if (!await CheckInput(args)) {
                 return false;
             }
             SubCommand SubCommand;
             SubCommands.TryGetValue(args[1], out SubCommand);
-            return await SubCommand(message, args);
+            return await SubCommand(message, context, args);
         }
 
         /// <summary>
@@ -103,7 +104,7 @@ namespace JuniperBot.Commands {
         /// </summary>
         /// <param name="args">Arguments</param>
         /// <returns><B>True</B> if input is valid, <B>False</B> otherwise.</returns>
-        private bool CheckInput(string[] args) {
+        private async Task<bool> CheckInput(string[] args) {
             bool valid = true;
             if (args == null) {
                 valid = false;
@@ -112,7 +113,7 @@ namespace JuniperBot.Commands {
                 valid = false;
             }
             if (!valid) {
-                HelpCommand(null, args);
+                await HelpCommand(null, null, args);
                 return valid;
             }
             if (!SubCommands.ContainsKey(args[1])) {
@@ -127,7 +128,7 @@ namespace JuniperBot.Commands {
         /// </summary>
         /// <param name="args">Arguments (not used)</param>
         /// <returns>Not used. Always <b>True</b>.</returns>
-        private async Task<bool> HelpCommand(DiscordMessage message, string[] args) {
+        private async Task<bool> HelpCommand(DiscordMessage message, BotContext context, string[] args) {
             foreach (string output in GetCommandList()) {
                 LogInfo(output);
             }

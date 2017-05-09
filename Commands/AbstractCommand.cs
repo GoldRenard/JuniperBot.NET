@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus;
+using JuniperBot.Model;
 
 namespace JuniperBot.Commands {
 
@@ -31,7 +32,7 @@ namespace JuniperBot.Commands {
         /// </summary>
         /// <param name="args">Input arguments</param>
         /// <returns><B>True</B> if command successfully executed, <B>false</B> otherwise.</returns>
-        public abstract Task<bool> DoCommand(DiscordMessage message, string[] args);
+        public abstract Task<bool> DoCommand(DiscordMessage message, BotContext context, string[] args);
 
         /// <summary>
         /// Command description

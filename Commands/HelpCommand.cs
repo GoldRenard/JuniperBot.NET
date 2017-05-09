@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus;
+using JuniperBot.Model;
 using JuniperBot.Services;
 using Ninject;
 
@@ -26,7 +27,7 @@ namespace JuniperBot.Commands {
             : base("хелп", "Отображает эту справку") {
         }
 
-        public async override Task<bool> DoCommand(DiscordMessage message, string[] args) {
+        public async override Task<bool> DoCommand(DiscordMessage message, BotContext context, string[] args) {
             IDictionary<string, ICommand> commands = CommandManager.GetCommands();
             StringBuilder builder = new StringBuilder();
             builder.AppendLine();
