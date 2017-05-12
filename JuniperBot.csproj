@@ -197,6 +197,7 @@
     <Compile Include="Commands\Phyr\DetailedCommand.cs" />
     <Compile Include="Commands\Phyr\PostCommand.cs" />
     <Compile Include="Commands\ICommand.cs" />
+    <Compile Include="Commands\Phyr\AutoPostCommand.cs" />
     <Compile Include="Model\BotContext.cs" />
     <Compile Include="Model\Configuration\BotConfigSection.cs" />
     <Compile Include="Model\Configuration\DiscordElement.cs" />

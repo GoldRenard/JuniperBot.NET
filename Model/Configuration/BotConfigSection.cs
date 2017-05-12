@@ -30,5 +30,14 @@ namespace JuniperBot.Model.Configuration {
                 return (InstagramElement)(base["Instagram"]);
             }
         }
+
+        [ConfigurationProperty("SelfUpdateInterval", IsRequired = true)]
+        public int SelfUpdateInterval
+        {
+            get
+            {
+                return (int)(base["SelfUpdateInterval"]);
+            }
+        }
     }
 }

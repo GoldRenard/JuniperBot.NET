@@ -58,7 +58,7 @@ namespace JuniperBot.Services {
             BotContext context;
             ChannelContexts.TryGetValue(message.Channel.Id, out context);
             if (context == null) {
-                context = new BotContext();
+                context = new BotContext(message.Channel);
                 ChannelContexts.TryAdd(message.Channel.Id, context);
             }
 

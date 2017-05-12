@@ -13,6 +13,7 @@ using Ninject;
 namespace JuniperBot.Commands.Phyr {
 
     internal class PostCommand : AbstractCommand {
+        private const int MAX_DETAILED = 3;
 
         [Inject]
         public InstagramClient InstagramClient
@@ -21,7 +22,11 @@ namespace JuniperBot.Commands.Phyr {
         }
 
         public PostCommand()
-            : base("фыр", "Фыркнуть посты из блога Джупи (можно указать количество постов, по-умолчанию одно)") {
+            : this("фыр", "Фыркнуть посты из блога Джупи (можно указать количество постов, по-умолчанию одно)") {
+        }
+
+        public PostCommand(string commandName, string commandDescription)
+            : base(commandName, commandDescription) {
         }
 
         public async override Task<bool> DoCommand(SocketMessage message, BotContext context, string[] args) {
@@ -39,11 +44,16 @@ namespace JuniperBot.Commands.Phyr {
             }
 
             medias = medias.GetRange(0, count);
+            await Post(medias, context);
+            return true;
+        }
+
+        protected async Task Post(List<Media> medias, BotContext context) {
             if (medias.Count > 0) {
                 if (context.DetailedEmbed) {
-                    foreach (Media media in medias) {
-                        Embed embed = ConvertToEmbed(context, media);
-                        await message.Channel.SendMessageAsync("", false, embed);
+                    for (int i = 0; i < Math.Min(MAX_DETAILED, medias.Count); i++) {
+                        Embed embed = ConvertToEmbed(context, medias[i]);
+                        await context.Channel.SendMessageAsync("", false, embed);
                     }
                 } else {
                     IEnumerator<Media> iterator = medias.GetEnumerator();
@@ -62,12 +72,11 @@ namespace JuniperBot.Commands.Phyr {
                         messages.Add(builder.ToString());
                     }
                     foreach (string part in messages) {
-                        await message.Channel.SendMessageAsync(part);
+                        await context.Channel.SendMessageAsync(part);
                         await Task.Delay(2000);
                     }
                 }
             }
-            return true;
         }
 
         private static int ParseCount(BotContext context, string[] args) {
@@ -84,7 +93,7 @@ namespace JuniperBot.Commands.Phyr {
                 }
 
                 if (context.DetailedEmbed) {
-                    if (count > 3) {
+                    if (count > MAX_DETAILED) {
                         throw new ValidationException("Не могу прислать больше 3 фырок в нефырном виде :C");
                     }
                 } else {

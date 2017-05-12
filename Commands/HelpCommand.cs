@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
 using JuniperBot.Model;
 using JuniperBot.Services;
@@ -29,15 +30,14 @@ namespace JuniperBot.Commands {
 
         public async override Task<bool> DoCommand(SocketMessage message, BotContext context, string[] args) {
             IDictionary<string, ICommand> commands = CommandManager.GetCommands();
-            StringBuilder builder = new StringBuilder();
-            builder.AppendLine();
-            builder.AppendLine("Доступные команды:");
+            EmbedBuilder embedBuilder = new EmbedBuilder();
+            embedBuilder.ThumbnailUrl = message.Discord.CurrentUser.GetAvatarUrl();
             foreach (string key in commands.Keys) {
                 ICommand command;
                 commands.TryGetValue(key, out command);
-                builder.AppendLine(String.Format("\t{0}{1} - {2}", ConfigurationManager.Config.Discord.CommandPrefix, key, command.GetDescription()));
+                embedBuilder.AddInlineField(ConfigurationManager.Config.Discord.CommandPrefix + key, command.GetDescription());
             }
-            await message.Channel.SendMessageAsync(builder.ToString());
+            await message.Channel.SendMessageAsync("**Доступные команды:**", false, embedBuilder.Build());
             return true;
         }
     }
