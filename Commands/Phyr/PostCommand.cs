@@ -121,8 +121,17 @@ namespace JuniperBot.Commands.Phyr {
                 builder.Timestamp = media.CreatedTime;
                 builder.Url = media.Link;
                 if (media.Caption != null) {
-                    if (!string.IsNullOrEmpty(media.Caption.Text)) {
-                        builder.Title = media.Caption.Text;
+                    string text = media.Caption.Text;
+                    if (!string.IsNullOrEmpty(text)) {
+                        if (text.Length > 2000) {
+                            text = text.Substring(0, 2000);
+                        }
+                        if (media.Caption.Text.Length > 200) {
+                            builder.Title = media.Link;
+                            builder.Description = text;
+                        } else {
+                            builder.Title = text;
+                        }
                     }
                 }
             }
