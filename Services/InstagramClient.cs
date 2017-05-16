@@ -10,6 +10,7 @@ using Ninject;
 namespace JuniperBot.Services {
 
     internal class InstagramClient : AbstractService {
+        private static readonly log4net.ILog LOGGER = log4net.LogManager.GetLogger(typeof(InstagramClient));
 
         [Inject]
         public ConfigurationManager ConfigurationManager
@@ -47,16 +48,21 @@ namespace JuniperBot.Services {
         }
 
         public async Task<List<InstaSharp.Models.Media>> GetRecent() {
-            long currentTimestamp = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-            if (currentTimestamp > LatestUpdate + ConfigurationManager.Config.Instagram.TTL) {
-                var userFeed = await UsersEndPoint.Recent(ConfigurationManager.Config.Instagram.UserId);
-                lock (this) {
-                    if (userFeed.Meta.Code == System.Net.HttpStatusCode.OK) {
-                        Cache = userFeed.Data;
+            try {
+                long currentTimestamp = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+                if (currentTimestamp > LatestUpdate + ConfigurationManager.Config.Instagram.TTL) {
+                    var userFeed = await UsersEndPoint.Recent(ConfigurationManager.Config.Instagram.UserId);
+                    lock (this) {
+                        if (userFeed.Meta.Code == System.Net.HttpStatusCode.OK) {
+                            Cache = userFeed.Data;
+                        }
                     }
                 }
+                return Cache;
+            } catch (Exception e) {
+                LOGGER.Error("Could not get Instagram data", e);
+                return null;
             }
-            return Cache;
         }
     }
 }

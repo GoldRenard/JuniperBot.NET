@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
-using System.Threading;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using InstaSharp.Models;
 using JuniperBot.Model;
+using JuniperBot.Model.Events;
 using JuniperBot.Services;
 using Ninject;
 
@@ -15,7 +14,7 @@ namespace JuniperBot.Commands.Phyr {
         private static readonly log4net.ILog LOGGER = log4net.LogManager.GetLogger(typeof(AutoPostCommand));
 
         [Inject]
-        public ConfigurationManager ConfigurationManager
+        public InstagramPoller InstagramPoller
         {
             get; set;
         }
@@ -23,6 +22,8 @@ namespace JuniperBot.Commands.Phyr {
         private List<BotContext> Contexts = new List<BotContext>();
 
         private BackgroundWorker Worker;
+
+        private bool Initialized;
 
         public AutoPostCommand()
             : base("нафыркивай", "Автоматически нафыркивать новые посты из блога Джупи") {
@@ -34,6 +35,10 @@ namespace JuniperBot.Commands.Phyr {
                 if (!Contexts.Contains(context)) {
                     added = true;
                     Contexts.Add(context);
+                    if (!Initialized) {
+                        InstagramPoller.Update += InstagramPoller_Update;
+                        Initialized = true;
+                    }
                 }
             }
             if (!added) {
@@ -43,40 +48,23 @@ namespace JuniperBot.Commands.Phyr {
                 await context.Channel.SendMessageAsync("Хорошо! Как только будет что-то новенькое я сюда фыркну ^_^");
             }
 
-            lock (this) {
-                if (Worker == null) {
-                    Worker = new BackgroundWorker();
-                    Worker.DoWork += UpdateInterval;
-                    Worker.RunWorkerAsync();
-                }
-            }
             return true;
         }
 
-        private async void UpdateInterval(object sender, DoWorkEventArgs e) {
-            while (true) {
-                try {
-                    List<Media> medias = await InstagramClient.GetRecent();
-                    if (medias.Count > 0) {
-                        foreach (BotContext context in Contexts) {
-                            if (context.LatestId != null) {
-                                List<Media> newMedias = new List<Media>();
-                                IEnumerator<Media> enumerator = medias.GetEnumerator();
-                                while (enumerator.MoveNext() && !context.LatestId.Equals(enumerator.Current.Id)) {
-                                    newMedias.Add(enumerator.Current);
-                                }
-
-                                if (newMedias.Count > 0) {
-                                    await Post(newMedias, context);
-                                }
-                            }
-                            context.LatestId = medias[0].Id;
-                        }
+        private async void InstagramPoller_Update(object sender, UpdateInstagramEventArgs e) {
+            foreach (BotContext context in Contexts) {
+                if (context.LatestId != null) {
+                    List<Media> newMedias = new List<Media>();
+                    IEnumerator<Media> enumerator = e.Medias.GetEnumerator();
+                    while (enumerator.MoveNext() && !context.LatestId.Equals(enumerator.Current.Id)) {
+                        newMedias.Add(enumerator.Current);
                     }
-                } catch (Exception ex) {
-                    LOGGER.Error("Autopost error", ex);
+
+                    if (newMedias.Count > 0) {
+                        await Post(newMedias, context);
+                    }
                 }
-                Thread.Sleep(ConfigurationManager.Config.SelfUpdateInterval);
+                context.LatestId = e.Medias[0].Id;
             }
         }
     }

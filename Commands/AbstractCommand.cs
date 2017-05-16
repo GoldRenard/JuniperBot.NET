@@ -101,5 +101,13 @@ namespace JuniperBot.Commands {
             }
             return output;
         }
+
+        public virtual bool Hidden
+        {
+            get
+            {
+                return false;
+            }
+        }
     }
 }

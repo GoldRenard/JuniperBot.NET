@@ -30,5 +30,10 @@ namespace JuniperBot.Commands {
         /// </summary>
         /// <returns>Command name</returns>
         string GetName();
+
+        bool Hidden
+        {
+            get;
+        }
     }
 }

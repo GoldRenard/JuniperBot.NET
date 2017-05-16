@@ -21,5 +21,14 @@ namespace JuniperBot.Model.Configuration {
                 return base["CommandPrefix"] as string;
             }
         }
+
+        [ConfigurationProperty("WebHooks")]
+        public DiscordWebHookCollection WebHooks
+        {
+            get
+            {
+                return ((DiscordWebHookCollection)(base["WebHooks"]));
+            }
+        }
     }
 }

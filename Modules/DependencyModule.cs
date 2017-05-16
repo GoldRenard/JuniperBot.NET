@@ -14,7 +14,9 @@ namespace JuniperBot.Modules {
             Bind<CommandManager>().ToSelf().InSingletonScope().OnActivation(m => m.Initialize());
             Bind<ConfigurationManager>().ToSelf().InSingletonScope().OnActivation(m => m.Initialize());
             Bind<InstagramClient>().ToSelf().InSingletonScope().OnActivation(m => m.Initialize());
+            Bind<InstagramPoller>().ToSelf().InSingletonScope().OnActivation(m => m.Initialize());
             Bind<DiscordClient>().ToSelf().InSingletonScope().OnActivation(m => m.Initialize());
+            Bind<DiscordWebHookPoster>().ToSelf().InSingletonScope().OnActivation(m => m.Initialize());
 
             Kernel.Bind(e => {
                 e.FromThisAssembly()

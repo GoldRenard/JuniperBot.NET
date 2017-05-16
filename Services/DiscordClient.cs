@@ -21,7 +21,17 @@ namespace JuniperBot.Services {
             get; set;
         }
 
-        private DiscordSocketClient Client;
+        [Inject]
+        public DiscordWebHookPoster DiscordWebHookPoster
+        {
+            get; set;
+        }
+
+        public DiscordSocketClient Client
+        {
+            get;
+            private set;
+        }
 
         private DiscordSocketConfig Config;
 

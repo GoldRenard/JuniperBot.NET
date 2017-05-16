@@ -13,7 +13,7 @@ using Ninject;
 namespace JuniperBot.Commands.Phyr {
 
     internal class PostCommand : AbstractCommand {
-        private const int MAX_DETAILED = 3;
+        public const int MAX_DETAILED = 3;
 
         [Inject]
         public InstagramClient InstagramClient
@@ -33,6 +33,12 @@ namespace JuniperBot.Commands.Phyr {
             int count = ParseCount(context, args);
 
             List<Media> medias = await InstagramClient.GetRecent();
+
+            if (medias == null) {
+                await message.Channel.SendMessageAsync("Произошла какая-то ошибка у моего блога... Давай попробуем позже?");
+                return true;
+            }
+
             if (medias.Count == 0) {
                 await message.Channel.SendMessageAsync("Что-то мне и нечего показать...");
                 return true;
@@ -114,7 +120,7 @@ namespace JuniperBot.Commands.Phyr {
                 ImageUrl = media.Images.StandardResolution.Url
             };
 
-            if (context.DetailedEmbed) {
+            if (context == null || context.DetailedEmbed) {
                 builder.Author = new EmbedAuthorBuilder();
                 builder.Author.IconUrl = media.User.ProfilePicture;
                 builder.Author.Name = media.User.FullName;
