@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using InstaSharp.Models;
@@ -20,8 +19,6 @@ namespace JuniperBot.Commands.Phyr {
         }
 
         private List<BotContext> Contexts = new List<BotContext>();
-
-        private BackgroundWorker Worker;
 
         private bool Initialized;
 

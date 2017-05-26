@@ -90,7 +90,7 @@ namespace JuniperBot.Commands.Phyr {
             if (args.Length > 0) {
                 try {
                     count = int.Parse(args[0]);
-                } catch (Exception e) {
+                } catch (Exception) {
                     throw new ValidationException("Фыр на тебя. Число мне, число!");
                 }
 

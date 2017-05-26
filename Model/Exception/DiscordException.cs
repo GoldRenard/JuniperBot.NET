@@ -1,5 +1,8 @@
-﻿namespace JuniperBot.Model.Exception {
+﻿using System;
 
+namespace JuniperBot.Model.Exception {
+
+    [Serializable]
     public class DiscordException : System.Exception {
 
         public DiscordException() {

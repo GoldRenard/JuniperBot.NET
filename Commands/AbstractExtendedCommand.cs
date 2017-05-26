@@ -132,6 +132,7 @@ namespace JuniperBot.Commands {
             foreach (string output in GetCommandList()) {
                 LogInfo(output);
             }
+            await Task.Delay(0);
             return true;
         }
     }

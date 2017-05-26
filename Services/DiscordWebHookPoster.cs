@@ -11,6 +11,9 @@ using Ninject;
 namespace JuniperBot.Services {
 
     internal class DiscordWebHookPoster : AbstractService {
+        private const string USERNAME = "Джупи";
+
+        private const string AVATAR = "https://cdn.discordapp.com/avatars/310848622642069504/17f82d64779394935f900df9f4bb4b38.png?size=128";
 
         [Inject]
         public InstagramPoller InstagramPoller
@@ -74,7 +77,7 @@ namespace JuniperBot.Services {
                         embeds[i] = PostCommand.ConvertToEmbed(null, newMedias[i]);
                     }
                     foreach (DiscordWebhookClient webHook in WebHooks) {
-                        await webHook.SendMessageAsync("", false, embeds);
+                        await webHook.SendMessageAsync("", false, embeds, USERNAME, AVATAR);
                     }
                 }
             }
