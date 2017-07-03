@@ -37,6 +37,9 @@ namespace JuniperBot {
         }
 
         private static void Main(string[] args) {
+#if DEBUG
+            AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", "debug.config");
+#endif
             Console.Title = "Juniper Bot";
             log4net.Config.XmlConfigurator.Configure();
             Kernel = new StandardKernel(new DependencyModule());
