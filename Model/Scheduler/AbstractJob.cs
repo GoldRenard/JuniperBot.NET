@@ -6,7 +6,7 @@ using Quartz;
 namespace JuniperBot.Model.Scheduler {
 
     internal abstract class AbstractJob : IJob {
-        public readonly DateTime DateTime;
+        public readonly DateTimeOffset DateTimeOffset;
 
         public BotContext BotContext
         {
@@ -18,8 +18,8 @@ namespace JuniperBot.Model.Scheduler {
             // default constructor
         }
 
-        public AbstractJob(DateTime DateTime, BotContext context) {
-            this.DateTime = DateTime;
+        public AbstractJob(DateTimeOffset DateTimeOffset, BotContext context) {
+            this.DateTimeOffset = DateTimeOffset;
             this.BotContext = context;
         }
 

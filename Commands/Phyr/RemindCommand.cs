@@ -10,9 +10,8 @@ using Ninject;
 namespace JuniperBot.Commands.Phyr {
 
     internal class RemindCommand : AbstractCommand {
-        private static readonly log4net.ILog LOGGER = log4net.LogManager.GetLogger(typeof(AutoPostCommand));
 
-        private const string DATE_FORMAT = "dd.MM.yyyy HH:mmzzz";
+        private const string DATE_FORMAT = "dd.MM.yyyy HH:mm";
 
         [Inject]
         public SchedulerService SchedulerService
@@ -26,8 +25,11 @@ namespace JuniperBot.Commands.Phyr {
             get; set;
         }
 
+        private readonly TimeZoneInfo timeZoneInfo;
+
         public RemindCommand()
             : base("напомни", "Напомнить о чем-либо. Дата в формате дд.ММ.гггг чч:мм и сообщение в кавычках") {
+            timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
         }
 
         public async override Task<bool> DoCommand(SocketMessage message, BotContext context, string[] args) {
@@ -36,19 +38,24 @@ namespace JuniperBot.Commands.Phyr {
             }
 
             try {
-                DateTime date;
-                DateTime.TryParseExact(args[0] + "+04:00", DATE_FORMAT, CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out date);
-
-                if (date.ToUniversalTime() < DateTime.UtcNow) {
+                DateTimeOffset dateOffset = ParseDateExactForTimeZone(args[0], timeZoneInfo);
+                if (dateOffset.ToUniversalTime() < DateTime.UtcNow) {
                     await message.Channel.SendMessageAsync("Указывай дату в будущем, пожалуйста");
                     return false;
                 }
-                SchedulerService.Schedule(new MessageJob(date, context, args[1]));
+                SchedulerService.Schedule(new MessageJob(dateOffset, context, args[1]));
                 await message.Channel.SendMessageAsync("Лаааадно, напомню. Фыр.");
             } catch (Exception e) {
                 return await PrintHelp(message);
             }
             return true;
+        }
+
+        public DateTimeOffset ParseDateExactForTimeZone(string dateTime, TimeZoneInfo timezone) {
+            var parsedDateLocal = DateTimeOffset.ParseExact(dateTime, DATE_FORMAT, CultureInfo.InvariantCulture);
+            var tzOffset = timezone.GetUtcOffset(parsedDateLocal.DateTime);
+            var parsedDateTimeZone = new DateTimeOffset(parsedDateLocal.DateTime, tzOffset);
+            return parsedDateTimeZone;
         }
 
         private async Task<bool> PrintHelp(SocketMessage message) {

@@ -14,7 +14,7 @@ namespace JuniperBot.Model.Scheduler {
             // default constructor
         }
 
-        public MessageJob(DateTime DateTime, BotContext botContext, string message) : base(DateTime, botContext) {
+        public MessageJob(DateTimeOffset DateTimeOffset, BotContext botContext, string message) : base(DateTimeOffset, botContext) {
             this.Message = message;
         }
 

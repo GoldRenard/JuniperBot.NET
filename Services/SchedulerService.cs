@@ -21,7 +21,7 @@ namespace JuniperBot.Services {
                     .Build();
 
             ITrigger trigger = TriggerBuilder.Create()
-                .StartAt(job.DateTime)
+                .StartAt(job.DateTimeOffset)
                 .Build();
             scheduler.ScheduleJob(jobDetail, trigger);
         }
